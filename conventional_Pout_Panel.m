@@ -108,15 +108,17 @@ if updateTemp == 1
 
     % Add 10 degrees (some nominal amount) to each cell that is under reverse
     % bias
+    % We are subtracting the RevBias values because each value is negative
+    % power because under reverse bias
     for i = 1:cellsPerString
         if RevBias1(i) ~= 0
-            OpTempShift1(i) = OpTempShift1(i) - RevBias1(i)/1.3;
+            OpTempShift1(i) = OpTempShift1(i) - RevBias1(i)*1.5;
         end
         if RevBias2(i) ~= 0
-            OpTempShift2(i) = OpTempShift2(i) - RevBias2(i)/1.3;
+            OpTempShift2(i) = OpTempShift2(i) - RevBias2(i)*1.5;
         end
         if RevBias3(i) ~= 0
-            OpTempShift3(i) = OpTempShift3(i) - RevBias3(i)/1.3;
+            OpTempShift3(i) = OpTempShift3(i) - RevBias3(i)*1.5;
         end
     end
 
@@ -124,104 +126,104 @@ if updateTemp == 1
     % bias
     for i = 1
         if RevBias1(i) ~= 0
-            OpTempShift1(i+1) = OpTempShift1(i+1) - .5*RevBias1(i)/1.3;
-            OpTempShift1(i+10) = OpTempShift1(i+10)- .5*RevBias1(i)/1.3;
+            OpTempShift1(i+1) = OpTempShift1(i+1) - .5*RevBias1(i)*1.5;
+            OpTempShift1(i+10) = OpTempShift1(i+10)- .5*RevBias1(i)*1.5;
         end
         if RevBias2(i) ~= 0
-            OpTempShift2(i+1) = OpTempShift2(i+1)- .5*RevBias2(i)/1.3;
-            OpTempShift2(i+10) = OpTempShift2(i+10)- .5*RevBias2(i)/1.3;
-            OpTempShift1(i+10) = OpTempShift1(i+10)- .5*RevBias2(i)/1.3;
+            OpTempShift2(i+1) = OpTempShift2(i+1)- .5*RevBias2(i)*1.5;
+            OpTempShift2(i+10) = OpTempShift2(i+10)- .5*RevBias2(i)*1.5;
+            OpTempShift1(i+10) = OpTempShift1(i+10)- .5*RevBias2(i)*1.5;
         end
         if RevBias3(i) ~= 0
-            OpTempShift3(i+1) = OpTempShift3(i+1)- .5*RevBias3(i)/1.3;
-            OpTempShift3(i+10) = OpTempShift3(i+10)- .5*RevBias3(i)/1.3;
-            OpTempShift2(i+10) = OpTempShift2(i+10)- .5*RevBias3(i)/1.3;
+            OpTempShift3(i+1) = OpTempShift3(i+1)- .5*RevBias3(i)*1.5;
+            OpTempShift3(i+10) = OpTempShift3(i+10)- .5*RevBias3(i)*1.5;
+            OpTempShift2(i+10) = OpTempShift2(i+10)- .5*RevBias3(i)*1.5;
         end
     end
     for i = 2:9
         if RevBias1(i) ~= 0
-            OpTempShift1(i-1) = OpTempShift1(i-1) - .5*RevBias1(i)/1.3;
-            OpTempShift1(i+1) = OpTempShift1(i+1) - .5*RevBias1(i)/1.3;
-            OpTempShift1(i+10) = OpTempShift1(i+10) - .5*RevBias1(i)/1.3;
+            OpTempShift1(i-1) = OpTempShift1(i-1) - .5*RevBias1(i)*1.5;
+            OpTempShift1(i+1) = OpTempShift1(i+1) - .5*RevBias1(i)*1.5;
+            OpTempShift1(i+10) = OpTempShift1(i+10) - .5*RevBias1(i)*1.5;
         end
         if RevBias2(i) ~= 0
-            OpTempShift2(i-1) = OpTempShift2(i-1) - .5*RevBias2(i)/1.3;
-            OpTempShift2(i+1) = OpTempShift2(i+1) - .5*RevBias2(i)/1.3;
-            OpTempShift2(i+10) = OpTempShift2(i+10) - .5*RevBias2(i)/1.3;
-            OpTempShift1(i+10) = OpTempShift1(i+10) - .5*RevBias2(i)/1.3;
+            OpTempShift2(i-1) = OpTempShift2(i-1) - .5*RevBias2(i)*1.5;
+            OpTempShift2(i+1) = OpTempShift2(i+1) - .5*RevBias2(i)*1.5;
+            OpTempShift2(i+10) = OpTempShift2(i+10) - .5*RevBias2(i)*1.5;
+            OpTempShift1(i+10) = OpTempShift1(i+10) - .5*RevBias2(i)*1.5;
         end
         if RevBias3(i) ~= 0
-            OpTempShift3(i-1) = OpTempShift3(i-1) - .5*RevBias3(i)/1.3;
-            OpTempShift3(i+1) = OpTempShift3(i+1) - .5*RevBias3(i)/1.3;
-            OpTempShift3(i+10) = OpTempShift3(i+10) - .5*RevBias3(i)/1.3;
-            OpTempShift2(i+10) = OpTempShift2(i+10) - .5*RevBias3(i)/1.3;
+            OpTempShift3(i-1) = OpTempShift3(i-1) - .5*RevBias3(i)*1.5;
+            OpTempShift3(i+1) = OpTempShift3(i+1) - .5*RevBias3(i)*1.5;
+            OpTempShift3(i+10) = OpTempShift3(i+10) - .5*RevBias3(i)*1.5;
+            OpTempShift2(i+10) = OpTempShift2(i+10) - .5*RevBias3(i)*1.5;
         end
     end
     for i = 10
         if RevBias1(i) ~= 0
-            OpTempShift1(i-1) = OpTempShift1(i-1)- .5*RevBias1(i)/1.3;
-            OpTempShift1(i+10) = OpTempShift1(i+10)- .5*RevBias1(i)/1.3;
+            OpTempShift1(i-1) = OpTempShift1(i-1)- .5*RevBias1(i)*1.5;
+            OpTempShift1(i+10) = OpTempShift1(i+10)- .5*RevBias1(i)*1.5;
         end
         if RevBias2(i) ~= 0
-            OpTempShift2(i-1) = OpTempShift2(i-1)- .5*RevBias2(i)/1.3;
-            OpTempShift2(i+10) = OpTempShift2(i+10)- .5*RevBias2(i)/1.3;
-            OpTempShift1(i+10) = OpTempShift1(i+10)- .5*RevBias2(i)/1.3;
+            OpTempShift2(i-1) = OpTempShift2(i-1)- .5*RevBias2(i)*1.5;
+            OpTempShift2(i+10) = OpTempShift2(i+10)- .5*RevBias2(i)*1.5;
+            OpTempShift1(i+10) = OpTempShift1(i+10)- .5*RevBias2(i)*1.5;
         end
         if RevBias3(i) ~= 0
-            OpTempShift3(i-1) = OpTempShift3(i-1)- .5*RevBias3(i)/1.3;
-            OpTempShift3(i+10) = OpTempShift3(i+10)- .5*RevBias3(i)/1.3;
-            OpTempShift2(i+10) = OpTempShift2(i+10)- .5*RevBias3(i)/1.3;
+            OpTempShift3(i-1) = OpTempShift3(i-1)- .5*RevBias3(i)*1.5;
+            OpTempShift3(i+10) = OpTempShift3(i+10)- .5*RevBias3(i)*1.5;
+            OpTempShift2(i+10) = OpTempShift2(i+10)- .5*RevBias3(i)*1.5;
         end
     end
     for i = 11
         if RevBias1(i) ~= 0
-            OpTempShift1(i+1) = OpTempShift1(i+1)- .5*RevBias1(i)/1.3;
-            OpTempShift1(i-10) = OpTempShift1(i-10)- .5*RevBias1(i)/1.3;
+            OpTempShift1(i+1) = OpTempShift1(i+1)- .5*RevBias1(i)*1.5;
+            OpTempShift1(i-10) = OpTempShift1(i-10)- .5*RevBias1(i)*1.5;
         end
         if RevBias2(i) ~= 0
-            OpTempShift2(i+1) = OpTempShift2(i+1)- .5*RevBias2(i)/1.3;
-            OpTempShift2(i-10) = OpTempShift2(i-10)- .5*RevBias2(i)/1.3;
-            OpTempShift1(i-10) = OpTempShift1(i-10)- .5*RevBias2(i)/1.3;
+            OpTempShift2(i+1) = OpTempShift2(i+1)- .5*RevBias2(i)*1.5;
+            OpTempShift2(i-10) = OpTempShift2(i-10)- .5*RevBias2(i)*1.5;
+            OpTempShift1(i-10) = OpTempShift1(i-10)- .5*RevBias2(i)*1.5;
         end
         if RevBias3(i) ~= 0
-            OpTempShift3(i+1) = OpTempShift3(i+1)- .5*RevBias3(i)/1.3;
-            OpTempShift3(i-10) = OpTempShift3(i-10)- .5*RevBias3(i)/1.3;
-            OpTempShift2(i-10) = OpTempShift2(i-10)- .5*RevBias3(i)/1.3;
+            OpTempShift3(i+1) = OpTempShift3(i+1)- .5*RevBias3(i)*1.5;
+            OpTempShift3(i-10) = OpTempShift3(i-10)- .5*RevBias3(i)*1.5;
+            OpTempShift2(i-10) = OpTempShift2(i-10)- .5*RevBias3(i)*1.5;
         end
     end
     for i = 12:19
         if RevBias1(i) ~= 0
-            OpTempShift1(i-1) = OpTempShift1(i-1)- .5*RevBias1(i)/1.3;
-            OpTempShift1(i+1) = OpTempShift1(i+1) - .5*RevBias1(i)/1.3;
-            OpTempShift1(i-10) = OpTempShift1(i-10) - .5*RevBias1(i)/1.3;
-            OpTempShift2(i-10) = OpTempShift2(i-10) - .5*RevBias1(i)/1.3;
+            OpTempShift1(i-1) = OpTempShift1(i-1)- .5*RevBias1(i)*1.5;
+            OpTempShift1(i+1) = OpTempShift1(i+1) - .5*RevBias1(i)*1.5;
+            OpTempShift1(i-10) = OpTempShift1(i-10) - .5*RevBias1(i)*1.5;
+            OpTempShift2(i-10) = OpTempShift2(i-10) - .5*RevBias1(i)*1.5;
         end
         if RevBias2(i) ~= 0
-            OpTempShift2(i-1) = OpTempShift2(i-1) - .5*RevBias2(i)/1.3;
-            OpTempShift2(i+1) = OpTempShift2(i+1) - .5*RevBias2(i)/1.3;
-            OpTempShift2(i-10) = OpTempShift2(i-10) - .5*RevBias2(i)/1.3;
-            OpTempShift3(i-10) = OpTempShift3(i-10) - .5*RevBias2(i)/1.3;
+            OpTempShift2(i-1) = OpTempShift2(i-1) - .5*RevBias2(i)*1.5;
+            OpTempShift2(i+1) = OpTempShift2(i+1) - .5*RevBias2(i)*1.5;
+            OpTempShift2(i-10) = OpTempShift2(i-10) - .5*RevBias2(i)*1.5;
+            OpTempShift3(i-10) = OpTempShift3(i-10) - .5*RevBias2(i)*1.5;
         end
         if RevBias3(i) ~= 0
-            OpTempShift3(i-1) = OpTempShift3(i-1) - .5*RevBias3(i)/1.3;
-            OpTempShift3(i+1) = OpTempShift3(i+1) - .5*RevBias3(i)/1.3;
-            OpTempShift3(i-10) = OpTempShift3(i-10) - .5*RevBias3(i)/1.3;
+            OpTempShift3(i-1) = OpTempShift3(i-1) - .5*RevBias3(i)*1.5;
+            OpTempShift3(i+1) = OpTempShift3(i+1) - .5*RevBias3(i)*1.5;
+            OpTempShift3(i-10) = OpTempShift3(i-10) - .5*RevBias3(i)*1.5;
         end
     end
     for i = 20
         if RevBias1(i) ~= 0
-            OpTempShift1(i-1) = OpTempShift1(i-1) - .5*RevBias1(i)/1.3;
-            OpTempShift1(i-10) = OpTempShift1(i-10) - .5*RevBias1(i)/1.3;
+            OpTempShift1(i-1) = OpTempShift1(i-1) - .5*RevBias1(i)*1.5;
+            OpTempShift1(i-10) = OpTempShift1(i-10) - .5*RevBias1(i)*1.5;
         end
         if RevBias2(i) ~= 0
-            OpTempShift2(i-1) = OpTempShift2(i-1) - .5*RevBias2(i)/1.3;
-            OpTempShift2(i-10) = OpTempShift2(i-10) - .5*RevBias2(i)/1.3;
-            OpTempShift1(i-10) = OpTempShift1(i-10) - .5*RevBias2(i)/1.3;
+            OpTempShift2(i-1) = OpTempShift2(i-1) - .5*RevBias2(i)*1.5;
+            OpTempShift2(i-10) = OpTempShift2(i-10) - .5*RevBias2(i)*1.5;
+            OpTempShift1(i-10) = OpTempShift1(i-10) - .5*RevBias2(i)*1.5;
         end
         if RevBias3(i) ~= 0
-            OpTempShift3(i-1) = OpTempShift3(i-1) - .5*RevBias3(i)/1.3;
-            OpTempShift3(i-10) = OpTempShift3(i-10) - .5*RevBias3(i)/1.3;
-            OpTempShift2(i-10) = OpTempShift2(i-10) - .5*RevBias3(i)/1.3;
+            OpTempShift3(i-1) = OpTempShift3(i-1) - .5*RevBias3(i)*1.5;
+            OpTempShift3(i-10) = OpTempShift3(i-10) - .5*RevBias3(i)*1.5;
+            OpTempShift2(i-10) = OpTempShift2(i-10) - .5*RevBias3(i)*1.5;
         end
     end
 end
