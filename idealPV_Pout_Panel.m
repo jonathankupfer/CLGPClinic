@@ -1,4 +1,4 @@
-function [ PowerOut, OperatingVoltage, OperatingCurrent ] = idealPV_Pout_Panel( GUpper, GLower, TUpper, TLower)
+function [ PowerOut, OperatingVoltage, OperatingCurrent, TempChangeUpdate] = idealPV_Pout_Panel( Gvect, Tvect)
 % Pass in a GUpper and GLower (two vectors of irradiance for cells in upper 
 % and lower banks), TUpper and TLower (two vectors of ambient temperature 
 % for cells inupper and lower banks. Function passes out three vectors:
@@ -8,101 +8,126 @@ function [ PowerOut, OperatingVoltage, OperatingCurrent ] = idealPV_Pout_Panel( 
 % Upper and then Lower.
 
 % Vbd = -23.5;
-numCellUpper = 192;
-numCellLower = 48;
-GUpper = 500.*ones(1,numCellUpper);
-GUpper(11:30) = [630 630 630 500 500 630 600 100 600 500 630 630 630 500 500 630 600 0 600 500];
-GUpper(131:150) = [630 630 630 500 500 630 600 100 600 500 630 630 630 500 500 630 600 0 600 500];
+numCell = 230;
 
-GLower = 500.*ones(1,numCellLower);
-GLower(11:30) = [630 630 630 500 500 630 600 100 600 500 630 630 630 500 500 630 600 0 600 500];
-
-GUpper(3) = 0;
-GLower(2) = 10;
-TUpper = TUpper.*ones(1,numCellUpper);
-TLower = TLower.*ones(1,numCellLower);
-
-
-
-% Loop through upper cell bank
-for i = 1:numCellUpper
-    Gcell = GUpper(i);
-    Tcell = TUpper(i);
+% Loop through Panel 1
+for i = 1:numCell
+    Gcell = Gvect(i);
+    Tcell = Tvect(i);
     sim('kkimpv');
-    VoutUpper(:,i) = Vpvout;
+    VoutPanel1(:,i) = Vpvout;
 end
 
-% Loop through lower cell bank
-for i = 1:numCellLower
-    Gcell = GLower(i);
-    Tcell = TLower(i);
+% Loop through Panel 2
+for i = 1:numCell
+    Gcell = Gvect(230 + i);
+    Tcell = Tvect(230 + i);
     sim('kkimpv');
-    VoutLower(:,i) = Vpvout;
+    VoutPanel2(:,i) = Vpvout;
+end
+
+% Loop through Panel 3
+for i = 1:numCell
+    Gcell = Gvect(460 + i);
+    Tcell = Tvect(460 + i);
+    sim('kkimpv');
+    VoutPanel3(:,i) = Vpvout;
 end
 
 % define variable height as length of elements in current sweep
-height = length(VoutUpper(:,1));
+height = length(VoutPanel1(:,1));
 
 % if an cell is outputting negative voltage, replace that with nan
-% do this for upper bank
-VUp_NonNeg = zeros(height,numCellUpper);
+% do this for all three panels
+V_NonNeg1 = zeros(height,numCell);
+V_NonNeg2 = zeros(height,numCell);
+V_NonNeg3 = zeros(height,numCell);
 
-for i = 1:numCellUpper
+for i = 1:numCell
+    % for panel 1
     for j = 1:height
-        if VoutUpper(j,i) < 0
-            VUp_NonNeg(j,i) = nan;
+        if VoutPanel1(j,i) < 0
+            V_NonNeg1(j,i) = nan;
         else
-            VUp_NonNeg(j,i) = VoutUpper(j,i);
+            V_NonNeg1(j,i) = VoutPanel1(j,i);
+        end
+    end
+    
+    % for panel 2
+    for j = 1:height
+        if VoutPanel2(j,i) < 0
+            V_NonNeg2(j,i) = nan;
+        else
+            V_NonNeg2(j,i) = VoutPanel2(j,i);
+        end
+    end
+        
+    % for panel 3
+    for j = 1:height
+        if VoutPanel3(j,i) < 0
+            V_NonNeg3(j,i) = nan;
+        else
+            V_NonNeg3(j,i) = VoutPanel3(j,i);
         end
     end
 end
 
-% if an cell is outputting negative voltage, replace that with nan
-% do this for lower bank
-VLow_NonNeg = zeros(height,numCellLower);
-
-for i = 1:numCellLower
-    for j = 1:height
-        if VoutLower(j,i) < 0
-            VLow_NonNeg(j,i) = nan;
-        else
-            VLow_NonNeg(j,i) = VoutLower(j,i);
-        end
-    end
-end
 
 % idealPV controller
 
-VsumUpper = zeros(height,1);
-VsumLower = zeros(height,1);
-PowerUp = zeros(height,1);
-PowerLow = zeros(height,1);
+Vsum1 = zeros(height,1);
+Vsum2 = zeros(height,1);
+Vsum3 = zeros(height,1);
+Power1 = zeros(height,1);
+Power2 = zeros(height,1);
+Power3 = zeros(height,1);
 
 for i = 1:height
     % vector of sum of output voltage for a given current value
-    VsumUpper(i) = sum(VUp_NonNeg(i,:));
-    VsumLower(i) = sum(VLow_NonNeg(i,:));
+    Vsum1(i) = sum(V_NonNeg1(i,:));
+    Vsum2(i) = sum(V_NonNeg2(i,:));
+    Vsum3(i) = sum(V_NonNeg3(i,:));
     
     % vector of power output
-    PowerUp(i) = VsumUpper(i).*Ipvout(i);
-    PowerLow(i) = VsumLower(i).*Ipvout(i);
+    Power1(i) = Vsum1(i).*Ipvout(i);
+    Power2(i) = Vsum2(i).*Ipvout(i);
+    Power3(i) = Vsum3(i).*Ipvout(i);
 end
 
 % find the max power out for each bank and the index
-[MaxPoutUp, IndexUp] = max(PowerUp);
-[MaxPoutLow, IndexLow] = max(PowerLow);
-TotalPower = MaxPoutUp + MaxPoutLow;
+[MaxPout1, Index1] = max(Power1);
+[MaxPout2, Index2] = max(Power2);
+[MaxPout3, Index3] = max(Power3);
+TotalPower = MaxPout1 + MaxPout2 + MaxPout3;
 
-OpVoltUp = VsumUpper(IndexUp);
-OpVoltLow = VsumLower(IndexLow);
+OpVolt1 = Vsum1(Index1);
+OpVolt2 = Vsum2(Index2);
+OpVolt3 = Vsum3(Index3);
 
 
-PowerOut = [TotalPower, MaxPoutUp, MaxPoutLow];
+PowerOut = [TotalPower, MaxPout1, MaxPout2, MaxPout3];
 
-OperatingVoltage = [OpVoltUp, OpVoltLow];
+OperatingVoltage = [OpVolt1, OpVolt2, OpVolt3];
 
-OperatingCurrent = [Ipvout(IndexUp), Ipvout(IndexLow)];
+OperatingCurrent = [Ipvout(Index1), Ipvout(Index2), Ipvout(Index3)];
+
+% Update temperature for next iteration:
+PowerUpdate1 = zeros(numCell);
+PowerUpdate2 = zeros(numCell);
+PowerUpdate3 = zeros(numCell);
+TempChangeUpdate = zeros(3*numCell);
+
+
+for i = 1:numCell
+    PowerUpdate1 = V_NonNeg1(Index1,i).*OperatingCurrent(1);
+    PowerUpdate2 = V_NonNeg2(Index2,i).*OperatingCurrent(2);
+    PowerUpdate3 = V_NonNeg3(Index3,i).*OperatingCurrent(3);
+end
+
+
+TempChangeUpdate(1:230) = PowerUpdate1.*1.5;
+TempChangeUpdate(231:460)= PowerUpdate2.*1.5;
+TempChangeUpdate(461:690)= PowerUpdate3.*1.5;
 
 
 end
-
