@@ -83,6 +83,5 @@ for n=1:((0:5:1080)/60+40)
 
 
 end
-%It's not 3D or normalized for angle yet. GenerateIntensities needs to be
-%invloved here. I'm not quite sure how yet. I am close though.  
+%It's not 3D or normalized for angle yet.
 
