@@ -7,6 +7,8 @@ function [W_panel,S_panel,E_panel] = Gen3Panels(type,date,samps)
 % samps is a scalar, and is the number of times you want to sample the
 % sunlight.
 
+%%%%%%%%%%%%%%%% unfinished!!!!! Last updated on Github 4/3 %%%%%%%%%%%%%%%%%%%%%%%%%
+
 location = [34, -117]; % This is Claremont.
 
 %Let's start by generating three panels. All 3 panels have the same
