@@ -3,7 +3,7 @@ function [W_panel,S_panel,E_panel,tvect] = Gen3Panels(type,date,samps)
 %considerations taken for weather) for three panels at specific angles
 %south, west, and east, as determined by the CLGP Clinic field tests. 
 % type is either "IdealPV" or "Conventional". 
-% date is in the format "YYYY-MM-DD".
+% date is in the format 'YYYY-MM-DD'. (has to be in single quotes)
 % samps is a scalar, and is the number of times you want to sample the
 % sunlight.
 
@@ -50,8 +50,8 @@ else
     return;
 end
 
-w=panelDim(1);
-h=panelDim(2);
+w=cellDim(1);
+h=cellDim(2);
 
 
 W_panelAngles=[56, -144];
@@ -63,7 +63,7 @@ E_vector=UVector(E_panelAngles);
 
 % Initialize my variables! 
 W_panel = ones(h, w, samps);
-S_panel = ones(h, w, samps); 
+S_panel = ones(h, w, samps);
 E_panel = ones(h, w, samps);
 tvect = ones (1, T_size, samps);
 
@@ -136,7 +136,7 @@ for hour=linspace(1,samps, samps)
     shapematrix=flipud(reshape(strengthslist,cellDim(2),cellDim(1)));
     S_panel(:,:,hour)=shapematrix*S_suns;
     
-    tvect(:,:,hour)=getTemperatures(strcat(date,'.csv'), hours(hour)*100, T_size);
+    tvect(:,:,hour)=getTemperatures(date, hours(hour)*100, T_size);
    
     
 end
