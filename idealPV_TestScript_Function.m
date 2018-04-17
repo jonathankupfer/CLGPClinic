@@ -1,22 +1,18 @@
-function [ PowerOut, OperatingVoltage, OperatingCurrent, TempChangeUpdate] = idealPV_Pout_Panel( Gvect, Tvect)
-% Pass in a Gvect (a vector of G values and Tvect (a vector of T values). 
-% This Function passes out four vectors:
-%   - PowerOut: a vector of the total power and the power of each panel
-%   - OpVolt: The operating voltage of each panel
-%   - OpCurrent: The operating current of each panel
-%   - TempChangeUpdate: The temperature shift for the next iteration
-% These calculations are made based on the system architecture described in
-% the documentation.
+slope = .1;
+stepSize = 0.02;
+stopTime = 10;
+initialOutput = 0.001;
 
-% Vbd = -23.5;
-numCell = 230;
+numCell = 10;
+Gvect = 25.*ones(30,1);
+Tvect = 500.*ones(30,1);
 
 % Loop through Panel 1
 
 for i = 1:numCell
     Gcell = Gvect(i);
     Tcell = Tvect(i);
-    sim('simulink_PV_dyn_model_mono');
+    sim('kkimpv_userIramp');
     VoutPanel1(:,i) = Vpvout;
 end
 
@@ -24,7 +20,7 @@ end
 for i = 1:numCell
     Gcell = Gvect(numCell + i);
     Tcell = Tvect(numCell + i);
-    sim('simulink_PV_dyn_model_mono');
+    sim('kkimpv_userIramp');
     VoutPanel2(:,i) = Vpvout;
 end
 
@@ -32,7 +28,7 @@ end
 for i = 1:numCell
     Gcell = Gvect(numCell*2 + i);
     Tcell = Tvect(numCell*2 + i);
-    sim('simulink_PV_dyn_model_mono');
+    sim('kkimpv_userIramp');
     VoutPanel3(:,i) = Vpvout;
 end
 
@@ -129,7 +125,4 @@ end
 
 TempChangeUpdate(1:numCell) = PowerUpdate1.*1.5;
 TempChangeUpdate(numCell+1:2*numCell)= PowerUpdate2.*1.5;
-TempChangeUpdate(2*numCell+1:3*numCell)= PowerUpdate3.*1.5;
-
-
-end
+TempChangeUpdate(numCell*2+1:numCell*3)= PowerUpdate3.*1.5;
