@@ -65,7 +65,7 @@ E_vector=UVector(E_panelAngles);
 W_panel = ones(h, w, samps);
 S_panel = ones(h, w, samps); 
 E_panel = ones(h, w, samps);
-tvect = ones (1, T_size);
+tvect = ones (1, T_size, samps);
 
 %Now, time to generate today's sunrise and sunset times. 
 today=SolarState(date, 0, location);
@@ -136,7 +136,7 @@ for hour=linspace(1,samps, samps)
     shapematrix=flipud(reshape(strengthslist,cellDim(2),cellDim(1)));
     S_panel(:,:,hour)=shapematrix*S_suns;
     
-    tvect(hour)=getTemperatures(date, hours(hour)*100, T_size);
+    tvect(:,:,hour)=getTemperatures(strcat(date,'.csv'), hours(hour)*100, T_size);
+   
     
 end
-
