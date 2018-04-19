@@ -1,9 +1,9 @@
-function [W_panel,S_panel,E_panel] = Gen3Panels(type,date,samps)
+function [W_panel,S_panel,E_panel,tvect] = Gen3Panels(type,date,samps)
 %Gen3Panels(type,date) generates pure insolation matrices (no
 %considerations taken for weather) for three panels at specific angles
 %south, west, and east, as determined by the CLGP Clinic field tests. 
 % type is either "IdealPV" or "Conventional". 
-% date is in the format "YYYY-MM-DD".
+% date is in the format 'YYYY-MM-DD'. (has to be in single quotes)
 % samps is a scalar, and is the number of times you want to sample the
 % sunlight.
 
@@ -12,6 +12,7 @@ function [W_panel,S_panel,E_panel] = Gen3Panels(type,date,samps)
 % % UVector.m
 % % ProjectShadow.m
 % % GenCylinder.m
+% % getTemperatures.m
 % % You must also be running Matlab r2017b (available in Charlie). 
 
 %%%%%%% USER DEFINED PARAMETERS: %%%%%%%%%
@@ -40,15 +41,17 @@ pipeDistance=6.5; % inches (distance from bottom of panel to
 if strcmp(type,'IdealPV')==1
     panelDim=[39 66]; % width x height, in inches
     cellDim=[23 10]; % width x height, in number of cells
+    T_size=690; % total cells
 elseif strcmp(type,'Conventional')==1
     panelDim=[38.98 65.43]; % width x height, in inches]
     cellDim=[6 10]; % width x height, in number of cells
+    T_size=180; % total cells
 else 
     return;
 end
 
-w=panelDim(1);
-h=panelDim(2);
+w=cellDim(1);
+h=cellDim(2);
 
 
 W_panelAngles=[56, -144];
@@ -58,10 +61,11 @@ S_vector=UVector(S_panelAngles);
 E_panelAngles=[56, -45];
 E_vector=UVector(E_panelAngles);
 
-%All the panels are the same size duh...
-W_panel = ones(cellDim(2), cellDim(1), samps);
-S_panel = ones(cellDim(2), cellDim(1), samps); 
-E_panel = ones(cellDim(2), cellDim(1), samps);
+% Initialize my variables! 
+W_panel = ones(h, w, samps);
+S_panel = ones(h, w, samps);
+E_panel = ones(h, w, samps);
+tvect = ones (1, T_size, samps);
 
 %Now, time to generate today's sunrise and sunset times. 
 today=SolarState(date, 0, location);
@@ -131,5 +135,8 @@ for hour=linspace(1,samps, samps)
     
     shapematrix=flipud(reshape(strengthslist,cellDim(2),cellDim(1)));
     S_panel(:,:,hour)=shapematrix*S_suns;
+    
+    tvect(:,:,hour)=getTemperatures(date, hours(hour)*100, T_size);
+   
     
 end

@@ -1,4 +1,4 @@
-function [ PowerOut, OperatingVoltage, OperatingCurrent, OpTempShift] = conventional_Pout_Panel( Gvect, Tvect )
+function [ PowerOut, OpVoltage, OpCurrent, OpTempShift] = conventional_Pout_Panel( Gvect, Tvect, interpolant, Ipvout )
 % Input GMatrix and TMatrix, vectors of G and T for a given conventional
 % cell and output PowerOut, the max power of that panel; OpVoltage and 
 % OpCurrent, the operating voltage and current for that power production,
@@ -15,10 +15,7 @@ numStrings = 9;
 
 for j = 1:numStrings
     for i = 1:cellsPerString
-        Gcell = Gvect(j,i);
-        Tcell = Tvect(j,i);
-        sim('kkimpv');
-        VoutString(j,:,i) = Vpvout;
+        VoutString(j,:,i)=Vsim(interpolant, 7:-0.025:0, Gvect(j,i), Tvect(j,i));
     end
 end
 
@@ -37,27 +34,27 @@ for j = 1:numStrings
     for i = 1:height
         % vector of sum of output voltage for a given current value
         VsumString(i,j) = sum(VoutString(j,i,:));
- 
-
-        
     end
 end
 
 for i = 1:height
         % We must optimize power for one current value through all strings
-        VsumTotal(i) = sum(VsumString(i,:);
+        VsumTotal(i) = sum(VsumString(i,:));
         % vector of power output
         PowerTotal(i) = VsumTotal(i)*Ipvout(i);
 end
 
 % find the max power out for all 9 strings.
-[MaxPout, Index] = max(PowerTotal);
+[MaxPout, Index] = max(PowerTotal(:,1));
 OpCurrent = Ipvout(Index);
+OpVoltage(1) = sum(VsumString(Index,:));
+OpVoltage(2:10) = (VsumString(Index,:));
+PowerOut = PowerTotal(Index,1);
 
 %% Bypass Diodes
 BypassDiode = zeros(1,numStrings);
 for j = 1:numStrings
-    if (VSumString(Index,j) < 0.6 || min(Gvect((1+(j-1)*20):(20+(j-1)*20))) < 0.1)
+    if (VsumString(Index,j) < 0.6 | min(Gvect((1+(j-1)*20):(20+(j-1)*20))) < 0.1)
         BypassDiode(1,j) = 1;
         MaxPout = MaxPout - (VsumString(Index,j) - 0.6) * OpCurrent;
     end
@@ -120,7 +117,8 @@ end
 
 for i = 1:numStrings
     for j = 1:cellsPerString
-        PowerPerCell(i,j) = PowerPerCell(i,j) + updatedVoltages(j,i).*Ipvout(Index);
+        rhs = PowerPerCell(i,j) + updatedVoltages(j,i)*Ipvout(Index);
+        PowerPerCell(i,j) = rhs;
     end
 end
 
@@ -141,117 +139,117 @@ for i = 1:numStrings
         OpTempShift(i,j) = OpTempShift(i,j) - PowerPerCell(i,j)*1.5;
     end
 end
-
+%% Dont care about things below this for now
 % Propagate by a factor of heatProp for neighboring cells of cells in
 % reverse bias.
 
-heatProp = 0.5;
-
-% the following loops go through the indices of each cell in a string:
-% j = which string, i = which cell:
-for j = [1,4,7]
-    for i = 1
-        if OpTempShift(j,i) > 0
-            OpTempShift(j,i+1) = OpTempShift(j,i+1) + heatProp*OpTempShift(j,i);
-            OpTempShift(j,i+10) = OpTempShift(j, j,i+10) + heatProp*OpTempShift(j,i);
-        end
-        if OpTempShift(j+1,i) > 0
-            OpTempShift(j+1,i+1) = OpTempShift(j+1,i+1) + heatProp*OpTempShift(j+1,i);
-            OpTempShift(j+1,i+10) = OpTempShift(j+1,i+10) + heatProp*OpTempShift(j+1,i);
-            OpTempShift(j,i+10) = OpTempShift(j,i+10) + heatProp*OpTempShift(j+1,i);
-        end
-        if OpTempShift(j+2,i) > 0
-            OpTempShift(j+2,i+1) = OpTempShift(j+2,i+1) + heatProp*OpTempShift(j+2,i);
-            OpTempShift(j+2,i+10) = OpTempShift(j+2,i+10) + heatProp*OpTempShift(j+2,i);
-            OpTempShift(j+1,i+10) = OpTempShift(j+1,i+10) + heatProp*OpTempShift(j+2,i);
-        end
-    end
-    for i = 2:9
-        if OpTempShift(j,i) > 0
-            OpTempShift(j, i-1) = OpTempShift(j, i-1) + heatProp*OpTempShift(j,i);
-            OpTempShift(j, i+1) = OpTempShift(j, i+1) + heatProp*OpTempShift(j,i);
-            OpTempShift(j, i+10) = OpTempShift(j, i+10) + heatProp*OpTempShift(j,i);
-        end
-        if OpTempShift(j+1,i) > 0
-            OpTempShift(j+1, i-1) = OpTempShift(j+1, i-1) + heatProp*OpTempShift(j+1,i);
-            OpTempShift(j+1, i+1) = OpTempShift(j+1, i+1) + heatProp*OpTempShift(j+1,i);
-            OpTempShift(j+1, i+10) = OpTempShift(j+1, i+10) + heatProp*OpTempShift(j+1,i);
-            OpTempShift(j, i+10) = OpTempShift(j, i+10) + heatProp*OpTempShift(j+1,i);
-        end
-        if OpTempShift(j+2,i) > 0
-            OpTempShift(j+2, i-1) = OpTempShift(j+2, i-1) + heatProp*OpTempShift(j+2,i);
-            OpTempShift(j+2, i+1) = OpTempShift(j+2, i+1) + heatProp*OpTempShift(j+2,i);
-            OpTempShift(j+2, i+10) = OpTempShift(j+2, i+10) + heatProp*OpTempShift(j+2,i);
-            OpTempShift(j+1, i+10) = OpTempShift(j+1, i+10) + heatProp*OpTempShift(j+2,i);
-        end
-    end
-    for i = 10
-        if OpTempShift(j,i) > 0
-            OpTempShift(j, i-1) = OpTempShift(j, i-1)+ heatProp*OpTempShift(j,i);
-            OpTempShift(j, i+10) = OpTempShift(j, i+10)+ heatProp*OpTempShift(j,i);
-        end
-        if OpTempShift(j+1,i) > 0
-            OpTempShift(j+1, i-1) = OpTempShift(j+1, i-1)+ heatProp*OpTempShift(j+1,i);
-            OpTempShift(j+1, i+10) = OpTempShift(j+1, i+10)+ heatProp*OpTempShift(j+1,i);
-            OpTempShift(j, i+10) = OpTempShift(j, i+10)+ heatProp*OpTempShift(j+1,i);
-        end
-        if OpTempShift(j+2,i) > 0
-            OpTempShift(j+2, i-1) = OpTempShift(j+2, i-1)+ heatProp*OpTempShift(j+2,i);
-            OpTempShift(j+2, i+10) = OpTempShift(j+2, i+10)+ heatProp*OpTempShift(j+2,i);
-            OpTempShift(j+1, i+10) = OpTempShift(j+1, i+10)+ heatProp*OpTempShift(j+2,i);
-        end
-    end
-    for i = 11
-        if OpTempShift(j,i) > 0
-            OpTempShift(j, i+1) = OpTempShift(j, i+1)+ heatProp*OpTempShift(j,i);
-            OpTempShift(j, i-10) = OpTempShift(j, i-10)+ heatProp*OpTempShift(j,i);
-        end
-        if OpTempShift(j+1,i) > 0
-            OpTempShift(j+1, i+1) = OpTempShift(j+1, i+1)+ heatProp*OpTempShift(j+1,i);
-            OpTempShift(j+1, i-10) = OpTempShift(j+1, i-10)+ heatProp*OpTempShift(j+1,i);
-            OpTempShift(j, i-10) = OpTempShift(j, i-10)+ heatProp*OpTempShift(j+1,i);
-        end
-        if OpTempShift(j+2,i) > 0
-            OpTempShift(j+2, i+1) = OpTempShift(j+2, i+1)+ heatProp*OpTempShift(j+2,i);
-            OpTempShift(j+2, i-10) = OpTempShift(j+2, i-10)+ heatProp*OpTempShift(j+2,i);
-            OpTempShift(j+1, i-10) = OpTempShift(j+1, i-10)+ heatProp*OpTempShift(j+2,i);
-        end
-    end
-    for i = 12:19
-        if OpTempShift(j,i) > 0
-            OpTempShift(j, i-1) = OpTempShift(j, i-1)+ heatProp*OpTempShift(j,i);
-            OpTempShift(j, i+1) = OpTempShift(j, i+1) + heatProp*OpTempShift(j,i);
-            OpTempShift(j, i-10) = OpTempShift(j, i-10) + heatProp*OpTempShift(j,i);
-            OpTempShift(j+1, i-10) = OpTempShift(j+1, i-10) + heatProp*OpTempShift(j,i);
-        end
-        if OpTempShift(j+1,i) > 0
-            OpTempShift(j+1, i-1) = OpTempShift(j+1, i-1) + heatProp*OpTempShift(j+1,i);
-            OpTempShift(j+1, i+1) = OpTempShift(j+1, i+1) + heatProp*OpTempShift(j+1,i);
-            OpTempShift(j+1, i-10) = OpTempShift(j+1, i-10) + heatProp*OpTempShift(j+1,i);
-            OpTempShift(j+2, i-10) = OpTempShift(j+2, i-10) + heatProp*OpTempShift(j+1,i);
-        end
-        if OpTempShift(j+2,i) > 0
-            OpTempShift(j+2, i-1) = OpTempShift(j+2, i-1) + heatProp*OpTempShift(j+2,i);
-            OpTempShift(j+2, i+1) = OpTempShift(j+2, i+1) + heatProp*OpTempShift(j+2,i);
-            OpTempShift(j+2, i-10) = OpTempShift(j+2, i-10) + heatProp*OpTempShift(j+2,i);
-        end
-    end
-    for i = 20
-        if OpTempShift(j,i) > 0
-            OpTempShift(j, i-1) = OpTempShift(j, i-1) + heatProp*OpTempShift(j,i);
-            OpTempShift(j, i-10) = OpTempShift(j, i-10) + heatProp*OpTempShift(j,i);
-        end
-        if OpTempShift(j+1,i) > 0
-            OpTempShift(j+1, i-1) = OpTempShift(j+1, i-1) + heatProp*OpTempShift(j+1,i);
-            OpTempShift(j+1, i-10) = OpTempShift(j+1, i-10) + heatProp*OpTempShift(j+1,i);
-            OpTempShift(j, i-10) = OpTempShift(j, i-10) + heatProp*OpTempShift(j+1,i);
-        end
-        if OpTempShift(j+2,i) > 0
-            OpTempShift(j+2, i-1) = OpTempShift(j+2, i-1) + heatProp*OpTempShift(j+2,i);
-            OpTempShift(j+2, i-10) = OpTempShift(j+2, i-10) + heatProp*OpTempShift(j+2,i);
-            OpTempShift(j+1, i-10) = OpTempShift(j+1, i-10) + heatProp*OpTempShift(j+2,i);
-        end
-    end
-end
+% heatProp = 0;
+% 
+% % the following loops go through the indices of each cell in a string:
+% % j = which string, i = which cell:
+% for j = [1,4,7]
+%     for i = 1
+%         if OpTempShift(j,i) > 0
+%             OpTempShift(j,i+1) = OpTempShift(j,i+1) + heatProp*OpTempShift(j,i);
+%             OpTempShift(j,i+10) = OpTempShift(j, j,i+10) + heatProp*OpTempShift(j,i);
+%         end
+%         if OpTempShift(j+1,i) > 0
+%             OpTempShift(j+1,i+1) = OpTempShift(j+1,i+1) + heatProp*OpTempShift(j+1,i);
+%             OpTempShift(j+1,i+10) = OpTempShift(j+1,i+10) + heatProp*OpTempShift(j+1,i);
+%             OpTempShift(j,i+10) = OpTempShift(j,i+10) + heatProp*OpTempShift(j+1,i);
+%         end
+%         if OpTempShift(j+2,i) > 0
+%             OpTempShift(j+2,i+1) = OpTempShift(j+2,i+1) + heatProp*OpTempShift(j+2,i);
+%             OpTempShift(j+2,i+10) = OpTempShift(j+2,i+10) + heatProp*OpTempShift(j+2,i);
+%             OpTempShift(j+1,i+10) = OpTempShift(j+1,i+10) + heatProp*OpTempShift(j+2,i);
+%         end
+%     end
+%     for i = 2:9
+%         if OpTempShift(j,i) > 0
+%             OpTempShift(j, i-1) = OpTempShift(j, i-1) + heatProp*OpTempShift(j,i);
+%             OpTempShift(j, i+1) = OpTempShift(j, i+1) + heatProp*OpTempShift(j,i);
+%             OpTempShift(j, i+10) = OpTempShift(j, i+10) + heatProp*OpTempShift(j,i);
+%         end
+%         if OpTempShift(j+1,i) > 0
+%             OpTempShift(j+1, i-1) = OpTempShift(j+1, i-1) + heatProp*OpTempShift(j+1,i);
+%             OpTempShift(j+1, i+1) = OpTempShift(j+1, i+1) + heatProp*OpTempShift(j+1,i);
+%             OpTempShift(j+1, i+10) = OpTempShift(j+1, i+10) + heatProp*OpTempShift(j+1,i);
+%             OpTempShift(j, i+10) = OpTempShift(j, i+10) + heatProp*OpTempShift(j+1,i);
+%         end
+%         if OpTempShift(j+2,i) > 0
+%             OpTempShift(j+2, i-1) = OpTempShift(j+2, i-1) + heatProp*OpTempShift(j+2,i);
+%             OpTempShift(j+2, i+1) = OpTempShift(j+2, i+1) + heatProp*OpTempShift(j+2,i);
+%             OpTempShift(j+2, i+10) = OpTempShift(j+2, i+10) + heatProp*OpTempShift(j+2,i);
+%             OpTempShift(j+1, i+10) = OpTempShift(j+1, i+10) + heatProp*OpTempShift(j+2,i);
+%         end
+%     end
+%     for i = 10
+%         if OpTempShift(j,i) > 0
+%             OpTempShift(j, i-1) = OpTempShift(j, i-1)+ heatProp*OpTempShift(j,i);
+%             OpTempShift(j, i+10) = OpTempShift(j, i+10)+ heatProp*OpTempShift(j,i);
+%         end
+%         if OpTempShift(j+1,i) > 0
+%             OpTempShift(j+1, i-1) = OpTempShift(j+1, i-1)+ heatProp*OpTempShift(j+1,i);
+%             OpTempShift(j+1, i+10) = OpTempShift(j+1, i+10)+ heatProp*OpTempShift(j+1,i);
+%             OpTempShift(j, i+10) = OpTempShift(j, i+10)+ heatProp*OpTempShift(j+1,i);
+%         end
+%         if OpTempShift(j+2,i) > 0
+%             OpTempShift(j+2, i-1) = OpTempShift(j+2, i-1)+ heatProp*OpTempShift(j+2,i);
+%             OpTempShift(j+2, i+10) = OpTempShift(j+2, i+10)+ heatProp*OpTempShift(j+2,i);
+%             OpTempShift(j+1, i+10) = OpTempShift(j+1, i+10)+ heatProp*OpTempShift(j+2,i);
+%         end
+%     end
+%     for i = 11
+%         if OpTempShift(j,i) > 0
+%             OpTempShift(j, i+1) = OpTempShift(j, i+1)+ heatProp*OpTempShift(j,i);
+%             OpTempShift(j, i-10) = OpTempShift(j, i-10)+ heatProp*OpTempShift(j,i);
+%         end
+%         if OpTempShift(j+1,i) > 0
+%             OpTempShift(j+1, i+1) = OpTempShift(j+1, i+1)+ heatProp*OpTempShift(j+1,i);
+%             OpTempShift(j+1, i-10) = OpTempShift(j+1, i-10)+ heatProp*OpTempShift(j+1,i);
+%             OpTempShift(j, i-10) = OpTempShift(j, i-10)+ heatProp*OpTempShift(j+1,i);
+%         end
+%         if OpTempShift(j+2,i) > 0
+%             OpTempShift(j+2, i+1) = OpTempShift(j+2, i+1)+ heatProp*OpTempShift(j+2,i);
+%             OpTempShift(j+2, i-10) = OpTempShift(j+2, i-10)+ heatProp*OpTempShift(j+2,i);
+%             OpTempShift(j+1, i-10) = OpTempShift(j+1, i-10)+ heatProp*OpTempShift(j+2,i);
+%         end
+%     end
+%     for i = 12:19
+%         if OpTempShift(j,i) > 0
+%             OpTempShift(j, i-1) = OpTempShift(j, i-1)+ heatProp*OpTempShift(j,i);
+%             OpTempShift(j, i+1) = OpTempShift(j, i+1) + heatProp*OpTempShift(j,i);
+%             OpTempShift(j, i-10) = OpTempShift(j, i-10) + heatProp*OpTempShift(j,i);
+%             OpTempShift(j+1, i-10) = OpTempShift(j+1, i-10) + heatProp*OpTempShift(j,i);
+%         end
+%         if OpTempShift(j+1,i) > 0
+%             OpTempShift(j+1, i-1) = OpTempShift(j+1, i-1) + heatProp*OpTempShift(j+1,i);
+%             OpTempShift(j+1, i+1) = OpTempShift(j+1, i+1) + heatProp*OpTempShift(j+1,i);
+%             OpTempShift(j+1, i-10) = OpTempShift(j+1, i-10) + heatProp*OpTempShift(j+1,i);
+%             OpTempShift(j+2, i-10) = OpTempShift(j+2, i-10) + heatProp*OpTempShift(j+1,i);
+%         end
+%         if OpTempShift(j+2,i) > 0
+%             OpTempShift(j+2, i-1) = OpTempShift(j+2, i-1) + heatProp*OpTempShift(j+2,i);
+%             OpTempShift(j+2, i+1) = OpTempShift(j+2, i+1) + heatProp*OpTempShift(j+2,i);
+%             OpTempShift(j+2, i-10) = OpTempShift(j+2, i-10) + heatProp*OpTempShift(j+2,i);
+%         end
+%     end
+%     for i = 20
+%         if OpTempShift(j,i) > 0
+%             OpTempShift(j, i-1) = OpTempShift(j, i-1) + heatProp*OpTempShift(j,i);
+%             OpTempShift(j, i-10) = OpTempShift(j, i-10) + heatProp*OpTempShift(j,i);
+%         end
+%         if OpTempShift(j+1,i) > 0
+%             OpTempShift(j+1, i-1) = OpTempShift(j+1, i-1) + heatProp*OpTempShift(j+1,i);
+%             OpTempShift(j+1, i-10) = OpTempShift(j+1, i-10) + heatProp*OpTempShift(j+1,i);
+%             OpTempShift(j, i-10) = OpTempShift(j, i-10) + heatProp*OpTempShift(j+1,i);
+%         end
+%         if OpTempShift(j+2,i) > 0
+%             OpTempShift(j+2, i-1) = OpTempShift(j+2, i-1) + heatProp*OpTempShift(j+2,i);
+%             OpTempShift(j+2, i-10) = OpTempShift(j+2, i-10) + heatProp*OpTempShift(j+2,i);
+%             OpTempShift(j+1, i-10) = OpTempShift(j+1, i-10) + heatProp*OpTempShift(j+2,i);
+%         end
+%     end
+% end
 end
 
