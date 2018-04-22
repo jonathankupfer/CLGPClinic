@@ -7,7 +7,7 @@ function [Tvect] = getTemperatures(date, time, TvectSize)
 % Should concatenate date to get the correct .csv file, then read in the
 % time and temp data columns from CIMIS
 fileDate = strcat(date,'.csv');
-fileName = fullfile('.','Ambient Heating Data',fileDate);
+fileName = fullfile('.','Temperatures',fileDate);
 CIMISTimeData = dlmread(fileName,',',[1,4,24,4]);
 CIMISTempData = dlmread(fileName,',',[1,16,24,16]);
 

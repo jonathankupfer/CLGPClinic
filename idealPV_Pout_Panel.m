@@ -13,9 +13,9 @@ numCell = 230;
 
 % Loop through panels
 for i = 1:numCell
-    VoutPanel1(:,i) = Vsim(interpolant, 7:-0.025:0, Gvect(i), Tvect(i));
-    VoutPanel2(:,i) = Vsim(interpolant, 7:-0.025:0, Gvect(numCell+ i), Tvect(numCell + i));
-    VoutPanel3(:,i) = Vsim(interpolant, 7:-0.025:0, Gvect(2*numCell+ i), Tvect(2*numCell + i));
+    VoutPanel1(:,i) = Vsim(interpolant, 7:-0.025:0, Gvect(1,i,1), Tvect(1,i,1));
+    VoutPanel2(:,i) = Vsim(interpolant, 7:-0.025:0, Gvect(1,numCell+ i,1), Tvect(1,numCell + i,1));
+    VoutPanel3(:,i) = Vsim(interpolant, 7:-0.025:0, Gvect(1,2*numCell+ i,1), Tvect(1,2*numCell + i,1));
 end
 
 % define variable height as length of elements in current sweep
@@ -60,11 +60,11 @@ TotalPower = MaxPout1 + MaxPout2 + MaxPout3;
 OpVolt1 = Vsum1(Index1);
 OpVolt2 = Vsum2(Index2);
 OpVolt3 = Vsum3(Index3);
-
+TotalVoltage = OpVolt1 + OpVolt2 + OpVolt3;
 
 PowerOut = [TotalPower, MaxPout1, MaxPout2, MaxPout3];
 
-OperatingVoltage = [OpVolt1, OpVolt2, OpVolt3];
+OperatingVoltage = [TotalVoltage, OpVolt1, OpVolt2, OpVolt3];
 
 OperatingCurrent = [Ipvout(Index1), Ipvout(Index2), Ipvout(Index3)];
 

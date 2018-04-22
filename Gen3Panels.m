@@ -1,4 +1,4 @@
-function [W_panel,S_panel,E_panel,tvect] = Gen3Panels(type,date,samps)
+function [W_panel,S_panel,E_panel,tvect, hours] = Gen3Panels(type,date,samps)
 %Gen3Panels(type,date) generates pure insolation matrices (no
 %considerations taken for weather) for three panels at specific angles
 %south, west, and east, as determined by the CLGP Clinic field tests. 
@@ -137,6 +137,4 @@ for hour=linspace(1,samps, samps)
     S_panel(:,:,hour)=shapematrix*S_suns;
     
     tvect(:,:,hour)=getTemperatures(date, hours(hour)*100, T_size);
-   
-    
 end
