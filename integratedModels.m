@@ -1,3 +1,17 @@
+% This code integrates the weather and insolation model with the system architecture models.
+% In order for this code to be run, the following files must also be available:
+% % Gen3Panels.m
+% % SolarState.m
+% % UVector.m
+% % ProjectShadow.m
+% % GenCylinder.m
+% % getTemperatures.m
+% % conventional_Temp_Stabilizer.m
+% % conventional_Pout_Panel.m
+% % idealPV_Pout_Panel.m
+% % interpolantWorkspace.mat, a workspace that holds the interpolated data for each system.
+% % You must also be running Matlab r2017b (available in Charlie).
+
 %% USER INPUTS:
 % Define nSamples, the number of linearly spaced samples throughout the day.
 nSamples = 100;
@@ -9,7 +23,7 @@ convergeCriteria = 0.01;
 %% Run weather and insolation model and format the data appropriately:
 % Call Gen3Panels function on each set of panels for a given day with nSamples number of samples.
 [W_panel_ideal,S_panel_ideal,E_panel_ideal,tvect_ideal,hours] = Gen3Panels('IdealPV','2018-04-01',nSamples);
-[W_panel_kyocera, S_panel_kyocera, E_panel_kyocera, tvect_kyocera, hours] = Gen3Panels('Kyocera', '2018-04-01', nSamples);
+[W_panel_kyocera, S_panel_kyocera, E_panel_kyocera, tvect_kyocera, hours] = Gen3Panels('Conventional', '2018-04-01', nSamples);
 
 % Populate gvect for idealPV and Kyocera panels to be formatted the correct way.
 gvect_ideal = zeros(1,690,nSamples);
