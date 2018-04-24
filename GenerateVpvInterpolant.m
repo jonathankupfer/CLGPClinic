@@ -18,14 +18,42 @@
 
 % First define the values to simulate
 
+% KU265-6MCA
+% Serial 16YB6A4N0001316
+%       1000 W/m^2   800 W/m^2
+% Voc = 38.3 V       
+% Isc = 9.26 A
+% Vpmax 31.0 V       27.9 V
+% Ipmax 8.55 A       6.85 A
+% Pmax  265 W        191 W
+% 10 x 6 grid, so 20 cells per string
+
+frac = 1; %/4;   % fraction of a full cell
+Tn = 25;    % is this the right nominal temperature?
+Voc = 38.3 / 60;
+Isc = 9.26 * frac;
+Rseries = 0.0042 * frac;
+Rshunt = 91.8 * frac;
+Kv = -0.0022;
+Ki = 0.0004 * frac;
+xvals = 0.001:0.0005:0.005;
+xvar = 'Rseries';
+xvals = xvals * frac;
+
+Imax = 9 * frac;
+Gcell = 800;
+Tcell = 45;
+Imax = 9.5 * frac * Gcell / 1000;
+
+simul = 'kkKyocera';
+
 insolations = 20:20:1000;
 temperatures = 20:5:80;
-currents = 0.05:0.05:8;
+currents = 0.05:0.05:8 * frac;
+
 
 Gcell = 20; Tcell = 20;
-Inommax = 7.61; % This is the nominal short-circuit current, but it is 
-% not passed into the simulink model; I just have it copied here, so if
-% the value needs to be changed, it has to be changed in both places.
+Inommax = Isc; 
 
 % First compute the rectangular grid of points in (i, G, T) space
 [x, y, z] = ndgrid(currents, insolations, temperatures);
@@ -58,7 +86,7 @@ for j = 1:length(insolations)
     
     for k = 1:length(temperatures)        
         Tcell = temperatures(k);
-        sim('kkimpvEfficient');     % run the simulation for this (Gcell,
+        sim(simul);     % run the simulation for this (Gcell,
                                     % Tcell)
         % now interpolate the output of the simulation into our
         % 'data cube' that will become the interpolant.
