@@ -1,0 +1,46 @@
+%cleaned up daily power output graphs
+
+y=[2722	2397
+2760	2432
+2786	2508
+2774	2334
+2766	2187
+2682	1577
+2714	2198
+2738	2291
+2750	2153
+2755	2150
+2761	2239
+2994	2168
+3022	2429
+3042	2333
+3005	2384
+2731	2319];
+x=datetime(['2018-03-28'
+    '2018-03-29'
+    '2018-03-30'
+    '2018-03-31'
+    '2018-04-01'
+    '2018-04-02'
+    '2018-04-03'
+    '2018-04-04'
+    '2018-04-05'
+    '2018-04-06'
+    '2018-04-07'
+    '2018-04-08'
+    '2018-04-09'
+    '2018-04-10'
+    '2018-04-11'
+    '2018-04-12']);
+
+plot(x,y,'-o');
+xlabel('Date');
+ylabel('Total energy collected (Wh)');
+legend('IdealPV','Conventional');
+title('Daily Energy Output');
+
+diff=(y(:,1)-y(:,2))./y(:,2);
+plot(x,diff,'-o');
+xlabel('Date');
+ylabel('Percent Increase');
+title('Percent Increase in power dissipated by idealPV over conventional panels');

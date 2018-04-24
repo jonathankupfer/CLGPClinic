@@ -1,21 +1,25 @@
+% D. Asnes and J. Kupfer
+% Spring 2018
+
 function [ PowerOut, OperatingVoltage, OperatingCurrent] = idealPV_Pout_Panel( Gvect, Tvect, interpolant, Ipvout)
-% Pass in a Gvect (a vector of G values and Tvect (a vector of T values). 
-% This Function passes out four vectors:
+% Pass in a Gvect (a vector of G values and Tvect (a vector of T values), and an interpolant 
+% to pull data from (taken from GENERATEVPVINTERPOLANT and a vector for a current sweep
+% This Function passes out three vectors:
 %   - PowerOut: a vector of the total power and the power of each panel
-%   - OpVolt: The operating voltage of each panel
+%   - OpVolt: The total operating voltage and the voltage of each panel (in this order)
 %   - OpCurrent: The operating current of each panel
-%   - TempChangeUpdate: The temperature shift for the next iteration
+% When a vector passes out infomration regarding each panel, it does so in the West, South, East order.
 % These calculations are made based on the system architecture described in
 % the documentation.
 
-% Vbd = -23.5;
+% Define the number of cells
 numCell = 230;
 
-% Loop through panels
+% Loop through panels and run pull the data from the interpolant.
 for i = 1:numCell
-    VoutPanel1(:,i) = Vsim(interpolant, 7:-0.025:0, Gvect(i), Tvect(i));
-    VoutPanel2(:,i) = Vsim(interpolant, 7:-0.025:0, Gvect(numCell+ i), Tvect(numCell + i));
-    VoutPanel3(:,i) = Vsim(interpolant, 7:-0.025:0, Gvect(2*numCell+ i), Tvect(2*numCell + i));
+    VoutPanel1(:,i) = Vsim(interpolant, 7:-0.025:0, Gvect(1,i,1), Tvect(1,i,1));
+    VoutPanel2(:,i) = Vsim(interpolant, 7:-0.025:0, Gvect(1,numCell+ i,1), Tvect(1,numCell + i,1));
+    VoutPanel3(:,i) = Vsim(interpolant, 7:-0.025:0, Gvect(1,2*numCell+ i,1), Tvect(1,2*numCell + i,1));
 end
 
 % define variable height as length of elements in current sweep
@@ -60,14 +64,20 @@ TotalPower = MaxPout1 + MaxPout2 + MaxPout3;
 OpVolt1 = Vsum1(Index1);
 OpVolt2 = Vsum2(Index2);
 OpVolt3 = Vsum3(Index3);
+TotalVoltage = OpVolt1 + OpVolt2 + OpVolt3;
 
-
+% define the output variables.
 PowerOut = [TotalPower, MaxPout1, MaxPout2, MaxPout3];
 
-OperatingVoltage = [OpVolt1, OpVolt2, OpVolt3];
+OperatingVoltage = [TotalVoltage, OpVolt1, OpVolt2, OpVolt3];
 
 OperatingCurrent = [Ipvout(Index1), Ipvout(Index2), Ipvout(Index3)];
 
+
+% the following functionality is commented out, but it updates the temperature of each cell
+% based on the heat turning into energy that goes into the battery. In order to turn on this functioanlity,
+% this code needs to be uncommented, and rather than running just the idealpV_pout script, the idealpv_temp_stabilizer
+% script must be run.
 
 
 % % Update temperature for next iteration:

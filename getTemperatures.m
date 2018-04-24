@@ -6,9 +6,10 @@ function [Tvect] = getTemperatures(date, time, TvectSize)
 
 % Should concatenate date to get the correct .csv file, then read in the
 % time and temp data columns from CIMIS
-fileName = fullfile('.','Ambient Heating Data','2018-04-01.csv');
+fileDate = strcat(date,'.csv');
+fileName = fullfile('.','Temperatures',fileDate);
 CIMISTimeData = dlmread(fileName,',',[1,4,24,4]);
-CIMISTempData = dlmread(fileName,',',[1,14,24,14]);
+CIMISTempData = dlmread(fileName,',',[1,16,24,16]);
 
 % File data to row 1x24 doubles
 timeData = transpose(CIMISTimeData);
