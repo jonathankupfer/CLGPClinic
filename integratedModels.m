@@ -82,7 +82,7 @@ OpCur_kyocera = zeros(1,nSamples);
 
 % run idealPV model
 for i = 1:nSamples
-     [ Pout_ideal(1,:,i), OpVolt_ideal(1,:,i), OpCur_ideal(1,:,i)] = idealPV_Pout_Panel( gvect_ideal(1,:,i), tvect_ideal(1,:,i), IdealPVinterpolant, Ipvout);
+     [ Pout_ideal(1,:,i), OpVolt_ideal(1,:,i), OpCur_ideal(1,:,i)] = idealPV_Pout_Panel( gvect_ideal(1,:,i), tvect_ideal(1,:,i), IdealPVupdinterpolant, Ipvout);
 end
 % run kyocera model
 for i = 1:nSamples

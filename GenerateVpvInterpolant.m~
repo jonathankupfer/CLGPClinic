@@ -17,19 +17,23 @@
 
 
 % First define the values to simulate
-Rseries = 0.0042*4;
-Rshunt = 91.8*4;
+frac = 1 / 4;   % fraction of a full cell
+Tn = 25;    % is this the right nominal temperature?
+Voc = 38.3 / 60;
+Isc = 9.26 * frac;
+Rseries = 0.0042 * frac;
+Rshunt = 91.8 * frac;
 Kv = -0.0022;
-Ki = 0.0004;
+Ki = 0.0004 * frac;
 xvals = 0.001:0.0005:0.005;
 xvar = 'Rseries';
+xvals = xvals * frac;
 
-voc = 38.3 / 60;
-
-Imax = 9;
+Imax = 9 * frac;
 Gcell = 800;
 Tcell = 45;
-Imax = 9.5 * Gcell / 4000;
+Imax = 9.5 * frac * Gcell / 1000;
+
 
 insolations = 20:20:1000;
 temperatures = 20:5:80;
@@ -71,7 +75,7 @@ for j = 1:length(insolations)
     
     for k = 1:length(temperatures)        
         Tcell = temperatures(k);
-        sim('kkKyocera');     % run the simulation for this (Gcell,
+        sim('kkKyocera_upd');     % run the simulation for this (Gcell,
                                     % Tcell)
         % now interpolate the output of the simulation into our
         % 'data cube' that will become the interpolant.
@@ -91,5 +95,5 @@ end
 % Set any errant values to 0
 v(isnan(v)) = 0; % shouldn't happen anymore, since we set extrapolations to -50
 interpolant = griddedInterpolant(x, y, z, v, 'makima');
-save('Kyocera_interpolant.mat');
+save('idealPVupd_interpolant.mat');
 
