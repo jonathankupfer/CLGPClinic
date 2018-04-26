@@ -12,7 +12,9 @@
 % % interpolantWorkspace.mat, a workspace that holds the interpolated data for each system.
 % % You must also be running Matlab r2017b (available in Charlie).
 % Load interpolant workspace and Ipvout vector.
-load('interpolantsForIntegratedModel.mat');
+% load('interpolantsForIntegratedModel.mat');
+load('Kyocera_interpolant.mat');
+load('idealPV_interpolant.mat');
 %% USER INPUTS:
 % Define nSamples, the number of linearly spaced samples throughout the day.
 nSamples = 25;
@@ -23,8 +25,10 @@ convergeCriteria = 0.01;
 
 %% Run weather and insolation model and format the data appropriately:
 % Call Gen3Panels function on each set of panels for a given day with nSamples number of samples.
-[W_panel_ideal,S_panel_ideal,E_panel_ideal,tvect_ideal,hours] = Gen3Panels('IdealPV','2018-04-01',nSamples);
-[W_panel_kyocera, S_panel_kyocera, E_panel_kyocera, tvect_kyocera_hold, hours] = Gen3Panels('Conventional', '2018-04-01', nSamples);
+[W_panel_ideal,S_panel_ideal,E_panel_ideal,tvect_ideal,hours] = ...
+    Gen3Panels('IdealPV','2018-04-01',nSamples);
+[W_panel_kyocera, S_panel_kyocera, E_panel_kyocera, tvect_kyocera_hold, hours] = ...
+    Gen3Panels('Conventional', '2018-04-01', nSamples);
 
 % Populate gvect for idealPV and Kyocera panels to be formatted the correct way.
 gvect_ideal = zeros(1,690,nSamples);
@@ -42,9 +46,9 @@ gvect_kyocera_hold = zeros(1,180,nSamples);
 for k = 1:nSamples
     for i = 1:10
         for j = 1:6
-            gvect_kyocera_hold(1, ((i-1)*6)+j, k) = W_panel_kyocera(i,j,k);
-            gvect_kyocera_hold(1, 60 + ((i-1)*6) + j, k) = S_panel_kyocera(i,j,k);
-            gvect_kyocera_hold(1, 120 + ((i-1)*6) + j, k) = E_panel_ideal(i,j,k);
+            gvect_kyocera_hold(1, ((j-1)*10)+i, k) = W_panel_kyocera(i,j,k);
+            gvect_kyocera_hold(1, 60 + ((j-1)*10)+i, k) = S_panel_kyocera(i,j,k);
+            gvect_kyocera_hold(1, 120 + ((j-1)*10)+i, k) = E_panel_ideal(i,j,k);
         end
     end
 end
@@ -80,13 +84,23 @@ Pout_kyocera = zeros(1,nSamples);
 OpVolt_kyocera = zeros(1,10,nSamples);
 OpCur_kyocera = zeros(1,nSamples);
 
+currents = 0:0.025:3;
+
 % run idealPV model
 for i = 1:nSamples
-     [ Pout_ideal(1,:,i), OpVolt_ideal(1,:,i), OpCur_ideal(1,:,i)] = idealPV_Pout_Panel( gvect_ideal(1,:,i), tvect_ideal(1,:,i), IdealPVupdinterpolant, Ipvout);
+     [ Pout_ideal(1,:,i), OpVolt_ideal(1,:,i), OpCur_ideal(1,:,i)] = ...
+         idealPV_Pout_Panel( gvect_ideal(1,:,i), tvect_ideal(1,:,i), ...
+         idealPV_interpolant, currents);
 end
 % run kyocera model
+
+currents = 0:0.025:10;
+
 for i = 1:nSamples
-    [Pout_kyocera(1,i), OpVolt_kyocera(1,:,i), OpCur_kyocera(1,i)] = conventional_Temp_Stabilizer( gvect_kyocera(:,:,i), tvect_kyocera(:,:,i), convergeCriteria, Kyocerainterpolant, Ipvout);
+    [Pout_kyocera(1,i), OpVolt_kyocera(1,:,i), OpCur_kyocera(1,i)] = ...
+        conventional_Temp_Stabilizer( gvect_kyocera(:,:,i), ...
+        tvect_kyocera(:,:,i), convergeCriteria, ...
+        Kyocera_interpolant, currents);
 
 end
 for i = 1:nSamples
@@ -98,24 +112,24 @@ end
 
 figure
 subplot(2,1,1)
-plot(1:nSamples, PoweroutPlotHold_ideal,'-o')
+plot(hours, PoweroutPlotHold_ideal,'-o')
 title('Total Power out for idealPV')
 xlabel('time in hours')
 ylabel('Instantaneous Power (W)')
 subplot(2,1,2)
-plot(1:nSamples, VoltageoutPlotHold_ideal,'-o')
+plot(hours, VoltageoutPlotHold_ideal,'-o')
 title('Total Voltage out for idealPV')
 xlabel('time in hours')
 ylabel('Instantaneous Voltage (V)')
 
 figure
 subplot(2,1,1)
-plot(1:nSamples, Pout_kyocera,'-o')
+plot(hours, Pout_kyocera,'-o')
 title('Total Power out for Kyocera')
 xlabel('time in hours')
 ylabel('Instantaneous Power (W)')
 subplot(2,1,2)
-plot(1:nSamples, VoltageoutPlotHold_kyocera,'-o')
+plot(hours, VoltageoutPlotHold_kyocera,'-o')
 title('Total Voltage out for Kyocera')
 xlabel('time in hours')
 ylabel('Instantaneous Voltage (V)')

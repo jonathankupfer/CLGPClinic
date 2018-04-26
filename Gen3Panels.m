@@ -112,28 +112,31 @@ for hour=linspace(1,samps, samps)
    
     pts = ProjectShadow(cyl, sst.sun_angles, S_panelAngles, [0 0 0]);
     cpts = ProjectShadow(cone, sst.sun_angles, S_panelAngles, [0 0 0]);
-    if isempty(pts) && isempty(cpts)
-        continue;
-    end
-    if isempty(pts)
-        pshadow = polyshape(cpts);
-    elseif isempty(cpts)
-        pshadow = polyshape(pts);
-    else
-        pshadow = union(polyshape(cpts(:,1), cpts(:,2)),...
-            polyshape(pts(:,1), pts(:,2)));
-    end
     
-    for posn = 1:(length(cellLocations)-1)
+    % Handle shadows by 
+    noShade = isempty(pts) && isempty(cpts);
+    if noShade
+        strengthslist = ones(1,length(cellLocations));
+    else
+        if isempty(pts)
+            pshadow = polyshape(cpts);
+        elseif isempty(cpts)
+            pshadow = polyshape(pts);
+        else
+            pshadow = union(polyshape(cpts(:,1), cpts(:,2)),...
+                polyshape(pts(:,1), pts(:,2)));
+        end
+    
+        for posn = 1:(length(cellLocations)-1)
             if inpolygon(cellLocations(1,posn),cellLocations(2,posn),...
                     pshadow.Vertices(:,1),pshadow.Vertices(:,2))
                 strengthslist(posn)=shadeFactor;
             else
                 strengthslist(posn)=1;
             end
+        end
     end
-    
-    shapematrix=flipud(reshape(strengthslist,cellDim(2),cellDim(1)));
+    shapematrix=flipud(reshape(strengthslist,cellDim(2),cellDim(1)));    
     S_panel(:,:,hour)=shapematrix*S_suns;
     
     tvect(:,:,hour)=getTemperatures(date, hours(hour)*100, T_size);

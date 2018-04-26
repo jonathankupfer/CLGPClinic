@@ -1,14 +1,16 @@
 % D. Asnes and J. Kupfer
 % Spring 2018
 
-function [ PowerOut, OperatingVoltage, OperatingCurrent] = idealPV_Pout_Panel( Gvect, Tvect, interpolant, Ipvout)
+function [ PowerOut, OperatingVoltage, OperatingCurrent] = ...
+    idealPV_Pout_Panel(Gvect, Tvect, interpolant, currents)
 % Pass in a Gvect (a vector of G values and Tvect (a vector of T values), and an interpolant 
 % to pull data from (taken from GENERATEVPVINTERPOLANT and a vector for a current sweep
 % This Function passes out three vectors:
 %   - PowerOut: a vector of the total power and the power of each panel
 %   - OpVolt: The total operating voltage and the voltage of each panel (in this order)
 %   - OpCurrent: The operating current of each panel
-% When a vector passes out infomration regarding each panel, it does so in the West, South, East order.
+% When a vector passes out infomration regarding each panel, it does so
+% in the West, South, East order.
 % These calculations are made based on the system architecture described in
 % the documentation.
 
@@ -17,10 +19,12 @@ numCell = 230;
 
 % Loop through panels and run pull the data from the interpolant.
 for i = 1:numCell
-    VoutPanel1(:,i) = Vsim(interpolant, 7:-0.025:0, Gvect(1,i,1), Tvect(1,i,1));
-    VoutPanel2(:,i) = Vsim(interpolant, 7:-0.025:0, Gvect(1,numCell+ i,1), Tvect(1,numCell + i,1));
-    VoutPanel3(:,i) = Vsim(interpolant, 7:-0.025:0, Gvect(1,2*numCell+ i,1), Tvect(1,2*numCell + i,1));
+    VoutPanel1(:,i) = Vsim(interpolant, currents, Gvect(1,i), Tvect(1,i));
+    VoutPanel2(:,i) = Vsim(interpolant, currents, Gvect(1,numCell+ i), Tvect(1,numCell + i));
+    VoutPanel3(:,i) = Vsim(interpolant, currents, Gvect(1,2*numCell+ i), Tvect(1,2*numCell + i));
 end
+disp(sprintf('(G1, T1) = (%g, %g)  (G2, T2) = (%g, %g) (G3, T3) = (%g, %g)',...
+    Gvect(1,1), Tvect(1,1), Gvect(1,231), Tvect(1,231), Gvect(1, 461), Tvect(1,461)))
 
 % define variable height as length of elements in current sweep
 height = length(VoutPanel1(:,1));
@@ -50,10 +54,14 @@ for i = 1:height
     Vsum3(i) = sum(V_NonNeg3(i,:));
     
     % vector of power output
-    Power1(i) = Vsum1(i).*Ipvout(i);
-    Power2(i) = Vsum2(i).*Ipvout(i);
-    Power3(i) = Vsum3(i).*Ipvout(i);
+    %Power1(i) = Vsum1(i).*currents(i);
+    %Power2(i) = Vsum2(i).*currents(i);
+    %Power3(i) = Vsum3(i).*currents(i);
 end
+
+Power1 = Vsum1 .* currents';
+Power2 = Vsum2 .* currents';
+Power3 = Vsum3 .* currents';
 
 % find the max power out for each bank and the index
 [MaxPout1, Index1] = max(Power1);
@@ -68,10 +76,13 @@ TotalVoltage = OpVolt1 + OpVolt2 + OpVolt3;
 
 % define the output variables.
 PowerOut = [TotalPower, MaxPout1, MaxPout2, MaxPout3];
+%Gvect(1,1);
+%Gvect(1,231)
+%Gvect(1,461)
 
 OperatingVoltage = [TotalVoltage, OpVolt1, OpVolt2, OpVolt3];
 
-OperatingCurrent = [Ipvout(Index1), Ipvout(Index2), Ipvout(Index3)];
+OperatingCurrent = [currents(Index1), currents(Index2), currents(Index3)];
 
 
 % the following functionality is commented out, but it updates the temperature of each cell

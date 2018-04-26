@@ -1,4 +1,4 @@
-function [ PowerOut, OpVoltage, OpCurrent, OpTempShift] = conventional_Pout_Panel( Gvect, Tvect, interpolant, Ipvout )
+function [ PowerOut, OpVoltage, OpCurrent, OpTempShift] = conventional_Pout_Panel( Gvect, Tvect, interpolant, currents )
 % Input GMatrix and TMatrix, vectors of G and T for a given conventional
 % cell and output PowerOut, the max power of that panel; OpVoltage and 
 % OpCurrent, the operating voltage and current for that power production,
@@ -13,9 +13,28 @@ numStrings = 9;
 %% Running Simulation to calculate Vout Vectors
 % Calculate Vout for all 9 strings
 
+% temporary definitions for calling the simulink model (jk 4/26)
+
+
+Tn = 25;
+Voc = 38.3 / 60;
+Isc = 9.26 * frac;
+Rseries = 0.0042 * frac;
+Rshunt = 91.8 * frac;
+Kv = -0.0022;
+Ki = 0.0004 * frac;
+currentMargin = 1.2;
+
 for j = 1:numStrings
     for i = 1:cellsPerString
-        VoutString(j,:,i)=Vsim(interpolant, 7:-0.025:0, Gvect(j,i), Tvect(j,i));
+        VoutString(j,:,i)=Vsim(interpolant, currents, Gvect(j,i), Tvect(j,i));
+        if Gvect(j,i) == 0
+            Gcell = gvect(j,i);
+            Tcell = tvect(j,i);
+            Imax = currentMargin * Isc * Gcell / 1000;
+            sim('kkKyocera');
+            VoutString(j,:,i) = 
+        end
     end
 end
 
@@ -26,8 +45,8 @@ height = length(VoutString(1,:,1));
 % Initialize vectors used to calculate power
 VsumString = zeros(height,numStrings);
 
-VsumTotal = zeros(height,numStrings);
-PowerTotal = zeros(height,numStrings);
+VsumTotal = zeros(height,1);
+PowerTotal = zeros(height,1);
 
 % Loop through each current value in the current sweep
 for j = 1:numStrings
@@ -41,12 +60,12 @@ for i = 1:height
         % We must optimize power for one current value through all strings
         VsumTotal(i) = sum(VsumString(i,:));
         % vector of power output
-        PowerTotal(i) = VsumTotal(i)*Ipvout(i);
+        PowerTotal(i) = VsumTotal(i)*currents(i);
 end
 
 % find the max power out for all 9 strings.
 [MaxPout, Index] = max(PowerTotal(:,1));
-OpCurrent = Ipvout(Index);
+OpCurrent = currents(Index);
 OpVoltage(1) = sum(VsumString(Index,:));
 OpVoltage(2:10) = (VsumString(Index,:));
 PowerOut = PowerTotal(Index,1);
@@ -77,7 +96,7 @@ PowerPerCell = zeros(numStrings,cellsPerString);
 for j = 1:numStrings
     if BypassDiode(j) == 0
         for i = 1:cellsPerString
-            PowerPerCell(j,i) = VoutString(j,Index,i)*Ipvout(Index); % in W
+            PowerPerCell(j,i) = VoutString(j,Index,i)*currents(Index); % in W
         end
     end
 end
@@ -117,7 +136,7 @@ end
 
 for i = 1:numStrings
     for j = 1:cellsPerString
-        rhs = PowerPerCell(i,j) + updatedVoltages(j,i)*Ipvout(Index);
+        rhs = PowerPerCell(i,j) + updatedVoltages(j,i)*currents(Index);
         PowerPerCell(i,j) = rhs;
     end
 end
