@@ -15,6 +15,7 @@
 % load('interpolantsForIntegratedModel.mat');
 load('Kyocera_interpolant.mat');
 load('idealPV_interpolant.mat');
+
 %% USER INPUTS:
 % Define nSamples, the number of linearly spaced samples throughout the day.
 nSamples = 25;
@@ -101,7 +102,6 @@ for i = 1:nSamples
         conventional_Temp_Stabilizer( gvect_kyocera(:,:,i), ...
         tvect_kyocera(:,:,i), convergeCriteria, ...
         Kyocera_interpolant, currents);
-
 end
 for i = 1:nSamples
      PoweroutPlotHold_ideal(1,i) = Pout_ideal(1,1,i);
@@ -124,6 +124,7 @@ ylabel('Instantaneous Voltage (V)')
 
 figure
 subplot(2,1,1)
+
 plot(hours, Pout_kyocera,'-o')
 title('Total Power out for Kyocera')
 xlabel('time in hours')

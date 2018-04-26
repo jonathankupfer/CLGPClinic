@@ -97,5 +97,3 @@ v(isnan(v)) = 0; % shouldn't happen anymore, since we set extrapolations to -50
 interpolant = griddedInterpolant(x, y, z, v, style);
 eval(strcat(NameOfInterpolant, " = interpolant;"));
 save(strcat(NameOfInterpolant, '.mat'), NameOfInterpolant);
-
-

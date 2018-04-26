@@ -44,5 +44,5 @@ for n = 1:length(times)
         num2str(sunAngles(2), ' %.1f°] '), ...
         '  Area = ', num2str(clip.area, '%.3f')]);
     drawnow;
-    % pause(.125);
+    %pause(.125);
 end
