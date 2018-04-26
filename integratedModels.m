@@ -12,7 +12,8 @@
 % % interpolantWorkspace.mat, a workspace that holds the interpolated data for each system.
 % % You must also be running Matlab r2017b (available in Charlie).
 % Load interpolant workspace and Ipvout vector.
-load('interpolantsForIntegratedModel.mat');
+%load('interpolantsForIntegratedModel.mat');
+load('currentSweep.mat');
 %% USER INPUTS:
 % Define nSamples, the number of linearly spaced samples throughout the day.
 nSamples = 25;
@@ -82,11 +83,11 @@ OpCur_kyocera = zeros(1,nSamples);
 
 % run idealPV model
 for i = 1:nSamples
-     [ Pout_ideal(1,:,i), OpVolt_ideal(1,:,i), OpCur_ideal(1,:,i)] = idealPV_Pout_Panel( gvect_ideal(1,:,i), tvect_ideal(1,:,i), IdealPVupdinterpolant, Ipvout);
+     [ Pout_ideal(1,:,i), OpVolt_ideal(1,:,i), OpCur_ideal(1,:,i)] = idealPV_Pout_Panel( gvect_ideal(1,:,i), tvect_ideal(1,:,i), IdealPVupdinterpolant, currentSweep);
 end
 % run kyocera model
 for i = 1:nSamples
-    [Pout_kyocera(1,i), OpVolt_kyocera(1,:,i), OpCur_kyocera(1,i)] = conventional_Temp_Stabilizer( gvect_kyocera(:,:,i), tvect_kyocera(:,:,i), convergeCriteria, Kyocerainterpolant, Ipvout);
+    [Pout_kyocera(1,i), OpVolt_kyocera(1,:,i), OpCur_kyocera(1,i)] = conventional_Temp_Stabilizer( gvect_kyocera(:,:,i), tvect_kyocera(:,:,i), convergeCriteria, Kyoceraupdinterpolant, currentSweep);
 
 end
 for i = 1:nSamples
@@ -98,7 +99,7 @@ end
 
 figure
 subplot(2,1,1)
-plot(1:nSamples, PoweroutPlotHold_ideal,'-o')
+plot(1:nSamples-2, PoweroutPlotHold_ideal(2:nSamples-1),'-o')
 title('Total Power out for idealPV')
 xlabel('time in hours')
 ylabel('Instantaneous Power (W)')
@@ -110,13 +111,13 @@ ylabel('Instantaneous Voltage (V)')
 
 figure
 subplot(2,1,1)
-plot(1:nSamples, Pout_kyocera,'-o')
-title('Total Power out for Kyocera')
+plot(hours(2:nSamples-1), Pout_kyocera(2:nSamples-1),'-o')
+title('Total Power out for Conventional Panels')
 xlabel('time in hours')
 ylabel('Instantaneous Power (W)')
 subplot(2,1,2)
-plot(1:nSamples, VoltageoutPlotHold_kyocera,'-o')
-title('Total Voltage out for Kyocera')
+plot(hours(2:nSamples-1), VoltageoutPlotHold_kyocera(2:nSamples-1),'-o')
+title('Total Voltage out for Conventional Panels')
 xlabel('time in hours')
 ylabel('Instantaneous Voltage (V)')
 

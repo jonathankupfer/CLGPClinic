@@ -17,7 +17,7 @@
 
 
 % First define the values to simulate
-frac = 1 / 4;   % fraction of a full cell
+frac = 1;   % fraction of a full cell
 Tn = 25;    % is this the right nominal temperature?
 Voc = 38.3 / 60;
 Isc = 9.26 * frac;
@@ -95,5 +95,5 @@ end
 % Set any errant values to 0
 v(isnan(v)) = 0; % shouldn't happen anymore, since we set extrapolations to -50
 interpolant = griddedInterpolant(x, y, z, v, 'makima');
-save('idealPVupd_interpolant.mat');
+save('Kyoceraupd_interpolant.mat');
 
