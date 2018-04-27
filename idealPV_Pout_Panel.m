@@ -23,8 +23,8 @@ for i = 1:numCell
     VoutPanel2(:,i) = Vsim(interpolant, currents, Gvect(1,numCell+ i), Tvect(1,numCell + i));
     VoutPanel3(:,i) = Vsim(interpolant, currents, Gvect(1,2*numCell+ i), Tvect(1,2*numCell + i));
 end
-disp(sprintf('(G1, T1) = (%g, %g)  (G2, T2) = (%g, %g) (G3, T3) = (%g, %g)',...
-    Gvect(1,1), Tvect(1,1), Gvect(1,231), Tvect(1,231), Gvect(1, 461), Tvect(1,461)))
+% disp(sprintf('(G1, T1) = (%g, %g)  (G2, T2) = (%g, %g) (G3, T3) = (%g, %g)',...
+%    Gvect(1,1), Tvect(1,1), Gvect(1,231), Tvect(1,231), Gvect(1, 461), Tvect(1,461)))
 
 % define variable height as length of elements in current sweep
 height = length(VoutPanel1(:,1));
@@ -67,11 +67,15 @@ Power3 = Vsum3 .* currents';
 [MaxPout1, Index1] = max(Power1);
 [MaxPout2, Index2] = max(Power2);
 [MaxPout3, Index3] = max(Power3);
-TotalPower = MaxPout1 + MaxPout2 + MaxPout3;
+% some of these are reporting NaNs
+% Doesn't happen with the Kyocera, though. Should we set them to zero?
+% TODO: I will do that, but it is worth thinking about.
 
-OpVolt1 = Vsum1(Index1);
-OpVolt2 = Vsum2(Index2);
-OpVolt3 = Vsum3(Index3);
+TotalPower = NotNaN(MaxPout1) + NotNaN(MaxPout2) + NotNaN(MaxPout3);
+
+OpVolt1 = NotNaN(Vsum1(Index1));
+OpVolt2 = NotNaN(Vsum2(Index2));
+OpVolt3 = NotNaN(Vsum3(Index3));
 TotalVoltage = OpVolt1 + OpVolt2 + OpVolt3;
 
 % define the output variables.
@@ -110,4 +114,19 @@ OperatingCurrent = [currents(Index1), currents(Index2), currents(Index3)];
 % TempChangeUpdate(2*numCell+1:3*numCell)= PowerUpdate3.*1.5;
 % 
 
+end
+
+
+
+function v = NotNaN(x)
+    SetNANsToZero = false;
+    if SetNANsToZero
+        if isnan(x)
+            v = 0;
+        else
+            v = x;
+        end
+    else
+        v = x;
+    end
 end

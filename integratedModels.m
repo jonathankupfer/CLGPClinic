@@ -16,9 +16,11 @@
 load('Kyocera_interpolant.mat');
 load('idealPV_interpolant.mat');
 
+thedate = '2018-04-03';
+
 %% USER INPUTS:
 % Define nSamples, the number of linearly spaced samples throughout the day.
-nSamples = 25;
+nSamples = 100;
 
 % Define convergenceCriteria, the max percent change allowable before convergence of temperature.
 convergeCriteria = 0.01;
@@ -27,9 +29,9 @@ convergeCriteria = 0.01;
 %% Run weather and insolation model and format the data appropriately:
 % Call Gen3Panels function on each set of panels for a given day with nSamples number of samples.
 [W_panel_ideal,S_panel_ideal,E_panel_ideal,tvect_ideal,hours] = ...
-    Gen3Panels('IdealPV','2018-04-01',nSamples);
+    Gen3Panels('IdealPV', thedate, nSamples);
 [W_panel_kyocera, S_panel_kyocera, E_panel_kyocera, tvect_kyocera_hold, hours] = ...
-    Gen3Panels('Conventional', '2018-04-01', nSamples);
+    Gen3Panels('Conventional', thedate, nSamples);
 
 % Populate gvect for idealPV and Kyocera panels to be formatted the correct way.
 gvect_ideal = zeros(1,690,nSamples);
@@ -90,8 +92,10 @@ currents = 0:0.025:3;
 % run idealPV model
 for i = 1:nSamples
      [ Pout_ideal(1,:,i), OpVolt_ideal(1,:,i), OpCur_ideal(1,:,i)] = ...
-         idealPV_Pout_Panel( gvect_ideal(1,:,i), tvect_ideal(1,:,i), ...
+         idealPV_Pout_Panel(gvect_ideal(1,:,i), tvect_ideal(1,:,i), ...
          idealPV_interpolant, currents);
+     PoweroutPlotHold_ideal(1,i) = Pout_ideal(1,1,i);
+     VoltageoutPlotHold_ideal(1,i) = OpVolt_ideal(1,1,i);
 end
 % run kyocera model
 
@@ -102,37 +106,40 @@ for i = 1:nSamples
         conventional_Temp_Stabilizer( gvect_kyocera(:,:,i), ...
         tvect_kyocera(:,:,i), convergeCriteria, ...
         Kyocera_interpolant, currents);
-end
-for i = 1:nSamples
-     PoweroutPlotHold_ideal(1,i) = Pout_ideal(1,1,i);
-     VoltageoutPlotHold_ideal(1,i) = OpVolt_ideal(1,1,i);
-     VoltageoutPlotHold_kyocera(1,i) = OpVolt_kyocera(1,1,i);
+    VoltageoutPlotHold_kyocera(1,i) = OpVolt_kyocera(1,1,i);
 end
  
 
-figure
+f = figure(1)
+% figure('DefaultAxesFontSize',14)
+% set(gca, 'FontSize', 18);
 subplot(2,1,1)
 plot(hours, PoweroutPlotHold_ideal,'-o')
 title('Total Power out for idealPV')
-xlabel('time in hours')
+xlabel('Time (hr)')
 ylabel('Instantaneous Power (W)')
 subplot(2,1,2)
 plot(hours, VoltageoutPlotHold_ideal,'-o')
 title('Total Voltage out for idealPV')
-xlabel('time in hours')
+xlabel('Time (hr)')
 ylabel('Instantaneous Voltage (V)')
+set(findall(gcf,'-property','FontSize'),'FontSize',14)
+set(findall(gcf,'-property','FontName'), 'FontName', 'Georgia')
 
-figure
+figure(2)
 subplot(2,1,1)
 
 plot(hours, Pout_kyocera,'-o')
 title('Total Power out for Kyocera')
-xlabel('time in hours')
+xlabel('Time (hr)')
 ylabel('Instantaneous Power (W)')
 subplot(2,1,2)
 plot(hours, VoltageoutPlotHold_kyocera,'-o')
 title('Total Voltage out for Kyocera')
-xlabel('time in hours')
+xlabel('Time (hr)')
 ylabel('Instantaneous Voltage (V)')
+set(findall(gcf,'-property','FontSize'),'FontSize',14)
+set(findall(gcf,'-property','FontName'), 'FontName', 'Arial')
+
 
     

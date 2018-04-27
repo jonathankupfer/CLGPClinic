@@ -13,7 +13,7 @@
 % Imax = maximum current to use for a particular simulation run
 
 % First define the values to simulate
-version = 1;    % 1 for Kyocera, 2 for idealPV
+version = 2;    % 1 for Kyocera, 2 for idealPV
 style = 'linear'; % or 'makima'
 if (version == 1)
     NameOfInterpolant = 'Kyocera_interpolant';
@@ -68,7 +68,7 @@ for j = 1:length(insolations)
     % Therefore, we don't need a current greater than the short-circuit
     % current, which depends linearly on the insolation. For Kyoceras,
     % we will need to go a bit deeper into reverse bias currents.
-    Imax = currentMargin * Isc * Gcell / 1000;
+    Imax = 1 + currentMargin * Isc * Gcell / 1000;
     
     for k = 1:length(temperatures)        
         Tcell = temperatures(k);

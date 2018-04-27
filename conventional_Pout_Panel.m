@@ -13,28 +13,9 @@ numStrings = 9;
 %% Running Simulation to calculate Vout Vectors
 % Calculate Vout for all 9 strings
 
-% temporary definitions for calling the simulink model (jk 4/26)
-
-
-Tn = 25;
-Voc = 38.3 / 60;
-Isc = 9.26 * frac;
-Rseries = 0.0042 * frac;
-Rshunt = 91.8 * frac;
-Kv = -0.0022;
-Ki = 0.0004 * frac;
-currentMargin = 1.2;
-
 for j = 1:numStrings
     for i = 1:cellsPerString
         VoutString(j,:,i)=Vsim(interpolant, currents, Gvect(j,i), Tvect(j,i));
-        if Gvect(j,i) == 0
-            Gcell = gvect(j,i);
-            Tcell = tvect(j,i);
-            Imax = currentMargin * Isc * Gcell / 1000;
-            sim('kkKyocera');
-            VoutString(j,:,i) = 
-        end
     end
 end
 
