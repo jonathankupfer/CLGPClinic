@@ -1,4 +1,4 @@
-function [W_panel,S_panel,E_panel,tvect, hours] = Gen3PanelsDiffuse(type,date,samps,allsouth)
+function [W_panel,S_panel,E_panel,tvect, hours] = Gen3Panels(type,date,samps,allsouth)
 %Gen3Panels(type,date) generates pure insolation matrices (no
 %considerations taken for weather) for three panels at specific angles
 %south, west, and east, as determined by the CLGP Clinic field tests. 
@@ -22,6 +22,10 @@ SunsToWatts = 1000; % W/m^2
 shadeFactor = 0.25; % maybe this varies from idealPV to conventional? This
                     % is the factor by which being in the stovepipe's 
                     % shade decreases the sun's wattage. 
+diffusionFactor = 0.025; % this is the factor by which the nominal suns
+                         % for that day is decreased when the panel is not
+                         % directly lit. 0.025 is randomly chosen. Could
+                         % easily be different.
 
 %the cyl is the lower part of the stovepipe, the cone is the upper part.
 cylHeight=3; %inches
@@ -95,18 +99,18 @@ for hour=linspace(1,samps, samps)
     sst=SolarState(date,hours(hour),location);
     W_suns=sst.suns*SunsToWatts*dot(sst.uSun,W_vector);
     if W_suns<0
-        W_suns=0.025*sst.suns*SunsToWatts;
+        W_suns=diffusionFactor*sst.suns*SunsToWatts;
     end
     W_panel(:,:,hour)=W_panel(:,:,hour)*W_suns;
     
     S_suns=sst.suns*SunsToWatts*dot(sst.uSun,S_vector);
     if S_suns<0
-        S_suns=0.025*sst.suns*SunsToWatts;
+        S_suns=diffusionFactor5*sst.suns*SunsToWatts;
     end
     
     E_suns=sst.suns*SunsToWatts*dot(sst.uSun,E_vector);
     if E_suns<0
-        E_suns=0.025*sst.suns*SunsToWatts;
+        E_suns=diffusionFactor*sst.suns*SunsToWatts;
     end
     E_panel(:,:,hour)=E_panel(:,:,hour)*E_suns;
    
