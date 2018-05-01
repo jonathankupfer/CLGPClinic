@@ -126,14 +126,14 @@ f = figure(1)
 % set(gca, 'FontSize', 18);
 subplot(2,1,1)
 plot(hours, PoweroutPlotHold_ideal,'-o')
-title('Total Power out for idealPV')
+title('idealPV Power Production')
 xlabel('Time (hr)')
 ylabel('Instantaneous Power (W)')
 str = strcat('Total Power produced:  ', num2str(idealPVTotalPowerProd), ' Wh');
 annotation('textbox',dim,'String',str,'FitBoxToText','on');
 subplot(2,1,2)
 plot(hours, VoltageoutPlotHold_ideal,'-o')
-title('Total Voltage out for idealPV')
+title('idealPV Voltage')
 xlabel('Time (hr)')
 ylabel('Instantaneous Voltage (V)')
 set(findall(gcf,'-property','FontSize'),'FontSize',14)
@@ -143,14 +143,14 @@ figure(2)
 subplot(2,1,1)
 
 plot(hours, Pout_kyocera,'-o')
-title('Total Power out for Kyocera')
+title('Conventional Power Production')
 xlabel('Time (hr)')
 ylabel('Instantaneous Power (W)')
 str = strcat('Total Power produced:  ', num2str(kyoceraTotalPowerProd), ' Wh');
 annotation('textbox',dim,'String',str,'FitBoxToText','on');
 subplot(2,1,2)
 plot(hours, VoltageoutPlotHold_kyocera,'-o')
-title('Total Voltage out for Kyocera')
+title('Conventional Voltage')
 xlabel('Time (hr)')
 ylabel('Instantaneous Voltage (V)')
 set(findall(gcf,'-property','FontSize'),'FontSize',14)
