@@ -1,6 +1,6 @@
 % This code integrates the weather and insolation model with the system architecture models.
 % In order for this code to be run, the following files must also be available:
-% % Gen3Panels.m
+% % Gen3PanelsDiffuse.m
 % % SolarState.m
 % % UVector.m
 % % ProjectShadow.m
@@ -29,9 +29,9 @@ convergeCriteria = 0.01;
 %% Run weather and insolation model and format the data appropriately:
 % Call Gen3Panels function on each set of panels for a given day with nSamples number of samples.
 [W_panel_ideal,S_panel_ideal,E_panel_ideal,tvect_ideal,hours] = ...
-    Gen3Panels('IdealPV', thedate, nSamples);
+    Gen3PanelsDiffuse('IdealPV', thedate, nSamplesm,1);
 [W_panel_kyocera, S_panel_kyocera, E_panel_kyocera, tvect_kyocera_hold, hours] = ...
-    Gen3Panels('Conventional', thedate, nSamples);
+    Gen3PanelsDiffuse('Conventional', thedate, nSamples,1);
 
 % Populate gvect for idealPV and Kyocera panels to be formatted the correct way.
 gvect_ideal = zeros(1,690,nSamples);
@@ -126,14 +126,14 @@ f = figure(1)
 % set(gca, 'FontSize', 18);
 subplot(2,1,1)
 plot(hours, PoweroutPlotHold_ideal,'-o')
-title('idealPV Power Production')
+title('idealPV Power Production ALL SOUTH')
 xlabel('Time (hr)')
 ylabel('Instantaneous Power (W)')
 str = strcat('Total Power produced:  ', num2str(idealPVTotalPowerProd), ' Wh');
 annotation('textbox',dim,'String',str,'FitBoxToText','on');
 subplot(2,1,2)
 plot(hours, VoltageoutPlotHold_ideal,'-o')
-title('idealPV Voltage')
+title('idealPV Voltage ALL SOUTH')
 xlabel('Time (hr)')
 ylabel('Instantaneous Voltage (V)')
 set(findall(gcf,'-property','FontSize'),'FontSize',14)
@@ -143,14 +143,14 @@ figure(2)
 subplot(2,1,1)
 
 plot(hours, Pout_kyocera,'-o')
-title('Conventional Power Production')
+title('Conventional Power Production ALL SOUTH')
 xlabel('Time (hr)')
 ylabel('Instantaneous Power (W)')
 str = strcat('Total Power produced:  ', num2str(kyoceraTotalPowerProd), ' Wh');
 annotation('textbox',dim,'String',str,'FitBoxToText','on');
 subplot(2,1,2)
 plot(hours, VoltageoutPlotHold_kyocera,'-o')
-title('Conventional Voltage')
+title('Conventional Voltage ALL SOUTH')
 xlabel('Time (hr)')
 ylabel('Instantaneous Voltage (V)')
 set(findall(gcf,'-property','FontSize'),'FontSize',14)
