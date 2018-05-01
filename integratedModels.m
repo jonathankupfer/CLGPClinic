@@ -108,7 +108,18 @@ for i = 1:nSamples
         Kyocera_interpolant, currents);
     VoltageoutPlotHold_kyocera(1,i) = OpVolt_kyocera(1,1,i);
 end
- 
+
+
+%%%% Find a value for the overall power production
+% j. Kupfer added 4/30 4:50 PM <--if there are bugs below this you can ignore
+
+startTime = hours(1);
+stopTime = hours(length(hours));
+timeStepLength = (stopTime - startTime)*60/nSamples; %timestep in minutes
+kyoceraTotalPowerProd = sum(timeStepLength.*Pout_kyocera); % in Wh
+idealPVTotalPowerProd = sum(timeStepLength.*PoweroutPlotHold_ideal); %in Wh
+
+%%%%%%%
 
 f = figure(1)
 % figure('DefaultAxesFontSize',14)
@@ -118,6 +129,8 @@ plot(hours, PoweroutPlotHold_ideal,'-o')
 title('Total Power out for idealPV')
 xlabel('Time (hr)')
 ylabel('Instantaneous Power (W)')
+str = strcat('Total Power produced:  ', num2str(idealPVTotalPowerProd), ' Wh');
+annotation('textbox',dim,'String',str,'FitBoxToText','on');
 subplot(2,1,2)
 plot(hours, VoltageoutPlotHold_ideal,'-o')
 title('Total Voltage out for idealPV')
@@ -133,6 +146,8 @@ plot(hours, Pout_kyocera,'-o')
 title('Total Power out for Kyocera')
 xlabel('Time (hr)')
 ylabel('Instantaneous Power (W)')
+str = strcat('Total Power produced:  ', num2str(kyoceraTotalPowerProd), ' Wh');
+annotation('textbox',dim,'String',str,'FitBoxToText','on');
 subplot(2,1,2)
 plot(hours, VoltageoutPlotHold_kyocera,'-o')
 title('Total Voltage out for Kyocera')
@@ -140,6 +155,7 @@ xlabel('Time (hr)')
 ylabel('Instantaneous Voltage (V)')
 set(findall(gcf,'-property','FontSize'),'FontSize',14)
 set(findall(gcf,'-property','FontName'), 'FontName', 'Arial')
+
 
 
     
